@@ -65,6 +65,9 @@ static uintmax_t max_line_length;
 static bool print_lines, print_words, print_chars, print_bytes;
 static bool print_linelength;
 
+/* Print title. */
+static bool print_title;
+
 /* The print width of each count.  */
 static int number_width;
 
@@ -101,6 +104,7 @@ static struct option const longopts[] =
   {"chars", no_argument, NULL, 'm'},
   {"lines", no_argument, NULL, 'l'},
   {"words", no_argument, NULL, 'w'},
+  {"titles", no_argument, NULL, 't'},
   {"files0-from", required_argument, NULL, FILES0_FROM_OPTION},
   {"max-line-length", no_argument, NULL, 'L'},
   {GETOPT_HELP_OPTION_DECL},
@@ -135,6 +139,7 @@ the following order: newline, word, character, byte, maximum line length.\n\
   -c, --bytes            print the byte counts\n\
   -m, --chars            print the character counts\n\
   -l, --lines            print the newline counts\n\
+  -t, --titles           print a line with titles\n\
 "), stdout);
       fputs (_("\
       --files0-from=F    read input from the files specified by\n\
@@ -178,7 +183,29 @@ write_counts (uintmax_t lines,
   static char const format_sp_int[] = " %*s";
   char const *format_int = format_sp_int + 1;
   char buf[INT_BUFSIZE_BOUND (uintmax_t)];
-
+  if (print_title)
+    {
+	if (print_lines)
+	  {
+	    printf("Lines ");
+	  }
+	if (print_words)
+	  {
+	    printf("Words ");
+	  }
+	if (print_chars)
+	  {
+	    printf("Characters  ");
+	  }
+	if (print_bytes)
+	  {
+	    printf("Bytes  ");
+	  }
+	if (print_bytes || print_chars || print_lines || print_words )
+	  {
+		printf("Filename \n");
+	 }
+    }
   if (print_lines)
     {
       printf (format_int, number_width, umaxtostr (lines, buf));
@@ -702,11 +729,11 @@ main (int argc, char **argv)
 
   posixly_correct = (getenv ("POSIXLY_CORRECT") != NULL);
 
-  print_lines = print_words = print_chars = print_bytes = false;
+  print_lines = print_words = print_chars = print_bytes = print_title = false;
   print_linelength = false;
   total_lines = total_words = total_chars = total_bytes = max_line_length = 0;
 
-  while ((optc = getopt_long (argc, argv, "clLmw", longopts, NULL)) != -1)
+  while ((optc = getopt_long (argc, argv, "clLmwt", longopts, NULL)) != -1)
     switch (optc)
       {
       case 'c':
@@ -728,6 +755,10 @@ main (int argc, char **argv)
       case 'L':
         print_linelength = true;
         break;
+
+      case 't' :
+	print_title = true;
+	break;
 
       case FILES0_FROM_OPTION:
         files_from = optarg;
